@@ -73,7 +73,7 @@ export default function App() {
     } catch (err) {
       console.error(err);
       setConnected(false);
-      setError("Could not connect to local node or initialize demo accounts.");
+      setError("Could not connect to local node.");
     }
   }
 
@@ -95,6 +95,20 @@ export default function App() {
   function shortenAddress(address) {
     if (!address) return "";
     return `${address.slice(0, 8)}...${address.slice(-8)}`;
+  }
+
+  function getInitial(name) {
+    return name?.charAt(0)?.toUpperCase() || "?";
+  }
+
+  function getAccountAccent(name) {
+    const map = {
+      Joan: { bg: "#ede9fe", color: "#6d28d9" },
+      Jean: { bg: "#dcfce7", color: "#15803d" },
+      Janet: { bg: "#dbeafe", color: "#1d4ed8" },
+      Richard: { bg: "#ffedd5", color: "#ea580c" },
+    };
+    return map[name] || { bg: "#e2e8f0", color: "#334155" };
   }
 
   async function fetchEscrows(apiInstance = api) {
@@ -123,7 +137,7 @@ export default function App() {
       setEscrows(items);
     } catch (err) {
       console.error(err);
-      setError("Could not load escrow records from chain.");
+      setError("Could not load escrow records.");
     } finally {
       setLoadingEscrows(false);
     }
@@ -212,7 +226,7 @@ export default function App() {
     const { client, freelancer, amount, deadline, workHash } = createForm;
 
     if (!client || !freelancer || !amount || !deadline || !workHash) {
-      setError("Please fill all Create Escrow fields.");
+      setError("Please complete all create escrow fields.");
       return;
     }
 
@@ -243,7 +257,7 @@ export default function App() {
     const { signer, escrowId, workHash } = submitForm;
 
     if (!signer || escrowId === "" || !workHash) {
-      setError("Please fill all Submit Work fields.");
+      setError("Please complete all submit work fields.");
       return;
     }
 
@@ -262,7 +276,7 @@ export default function App() {
     const { signer, escrowId } = approveForm;
 
     if (!signer || escrowId === "") {
-      setError("Please fill all Approve Work fields.");
+      setError("Please complete all approve work fields.");
       return;
     }
 
@@ -281,7 +295,7 @@ export default function App() {
     const { signer, escrowId } = cancelForm;
 
     if (!signer || escrowId === "") {
-      setError("Please fill all Cancel Escrow fields.");
+      setError("Please complete all cancel escrow fields.");
       return;
     }
 
@@ -293,48 +307,109 @@ export default function App() {
 
   return (
     <div style={styles.page}>
+      <div style={styles.glowOne} />
+      <div style={styles.glowTwo} />
+
       <div style={styles.container}>
-        <header style={styles.header}>
-          <div>
-            <h1 style={styles.title}>Freelance Escrow DApp</h1>
-            <p style={styles.subtitle}>
-              Secure milestone payment between client and freelancer
-            </p>
+        <header style={styles.topbar}>
+          <div style={styles.brandWrap}>
+            <div style={styles.logo}>◆</div>
+            <div>
+              <div style={styles.brandTitle}>Freelance Escrow</div>
+              <div style={styles.brandSub}>Secure blockchain payments</div>
+            </div>
           </div>
 
           <div
             style={{
-              ...styles.badge,
-              background: connected ? "#dcfce7" : "#fee2e2",
+              ...styles.connectionBadge,
+              background: connected
+                ? "rgba(34,197,94,0.14)"
+                : "rgba(239,68,68,0.14)",
               color: connected ? "#166534" : "#991b1b",
+              borderColor: connected
+                ? "rgba(34,197,94,0.24)"
+                : "rgba(239,68,68,0.24)",
             }}
           >
+            <span
+              style={{
+                ...styles.connectionDot,
+                background: connected ? "#22c55e" : "#ef4444",
+              }}
+            />
             {connected ? "Connected to node" : "Not connected"}
           </div>
         </header>
 
-        <section style={styles.infoCard}>
-          <h2 style={styles.cardTitle}>Demo Accounts</h2>
-          <p style={styles.cardText}>
-            These are local Substrate demo accounts for your coursework.
-          </p>
-
-          {accountOptions.map((name) => (
-            <p key={name} style={styles.smallText}>
-              <strong>{name}</strong>: {shortenAddress(accounts[name]?.address || "")}
+        <section style={styles.hero}>
+          <div style={styles.heroContent}>
+            <div style={styles.heroPill}>Decentralized freelance payments</div>
+            <h1 style={styles.heroTitle}>
+              Manage escrow payments with a cleaner, safer workflow
+            </h1>
+            <p style={styles.heroText}>
+              Create escrows, submit deliverables, approve work, and monitor all
+              transactions from one dashboard.
             </p>
-          ))}
+          </div>
+
+          <div style={styles.heroVisual}>
+            <div style={styles.visualCardMain}>Escrow</div>
+            <div style={styles.visualCardSmallTop}>Secure</div>
+            <div style={styles.visualCardSmallBottom}>On-chain</div>
+          </div>
         </section>
 
         {message ? <div style={styles.successBox}>{message}</div> : null}
         {error ? <div style={styles.errorBox}>{error}</div> : null}
 
-        <section style={styles.grid}>
-          <div style={styles.card}>
-            <h2 style={styles.cardTitle}>Create Escrow</h2>
-            <p style={styles.cardText}>
-              Choose a client and freelancer, then create a new escrow.
-            </p>
+        <section style={styles.sectionBlock}>
+          <div style={styles.sectionHeader}>
+            <div>
+              <h2 style={styles.sectionTitle}>Accounts</h2>
+              <p style={styles.sectionSub}>Available local identities</p>
+            </div>
+          </div>
+
+          <div style={styles.accountGrid}>
+            {accountOptions.map((name) => {
+              const accent = getAccountAccent(name);
+              return (
+                <div key={name} style={styles.accountCard}>
+                  <div
+                    style={{
+                      ...styles.accountAvatar,
+                      background: accent.bg,
+                      color: accent.color,
+                    }}
+                  >
+                    {getInitial(name)}
+                  </div>
+
+                  <div style={styles.accountInfo}>
+                    <div style={styles.accountName}>{name}</div>
+                    <div style={styles.accountAddress}>
+                      {shortenAddress(accounts[name]?.address || "")}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section style={styles.actionsGrid}>
+          <div style={styles.actionCard}>
+            <div style={styles.actionHeader}>
+              <div style={{ ...styles.actionIcon, background: "#ede9fe", color: "#6d28d9" }}>
+                +
+              </div>
+              <div>
+                <h3 style={styles.actionTitle}>Create Escrow</h3>
+                <p style={styles.actionText}>Open a new payment agreement</p>
+              </div>
+            </div>
 
             <select
               style={styles.select}
@@ -373,7 +448,7 @@ export default function App() {
             <input
               style={styles.input}
               name="deadline"
-              placeholder="Deadline block number"
+              placeholder="Deadline block"
               value={createForm.deadline}
               onChange={handleCreateChange}
             />
@@ -391,11 +466,16 @@ export default function App() {
             </button>
           </div>
 
-          <div style={styles.card}>
-            <h2 style={styles.cardTitle}>Submit Work</h2>
-            <p style={styles.cardText}>
-              Choose the freelancer account, then submit work for an existing escrow.
-            </p>
+          <div style={styles.actionCard}>
+            <div style={styles.actionHeader}>
+              <div style={{ ...styles.actionIcon, background: "#fef3c7", color: "#b45309" }}>
+                ↑
+              </div>
+              <div>
+                <h3 style={styles.actionTitle}>Submit Work</h3>
+                <p style={styles.actionText}>Send an updated work reference</p>
+              </div>
+            </div>
 
             <select
               style={styles.select}
@@ -431,11 +511,16 @@ export default function App() {
             </button>
           </div>
 
-          <div style={styles.card}>
-            <h2 style={styles.cardTitle}>Approve Work</h2>
-            <p style={styles.cardText}>
-              Choose the client account and approve a submitted escrow.
-            </p>
+          <div style={styles.actionCard}>
+            <div style={styles.actionHeader}>
+              <div style={{ ...styles.actionIcon, background: "#dcfce7", color: "#15803d" }}>
+                ✓
+              </div>
+              <div>
+                <h3 style={styles.actionTitle}>Approve Work</h3>
+                <p style={styles.actionText}>Release funds for completed work</p>
+              </div>
+            </div>
 
             <select
               style={styles.select}
@@ -463,11 +548,16 @@ export default function App() {
             </button>
           </div>
 
-          <div style={styles.card}>
-            <h2 style={styles.cardTitle}>Cancel Escrow</h2>
-            <p style={styles.cardText}>
-              Choose the client account and cancel an escrow still in Created state.
-            </p>
+          <div style={styles.actionCard}>
+            <div style={styles.actionHeader}>
+              <div style={{ ...styles.actionIcon, background: "#fee2e2", color: "#b91c1c" }}>
+                ×
+              </div>
+              <div>
+                <h3 style={styles.actionTitle}>Cancel Escrow</h3>
+                <p style={styles.actionText}>Close an escrow before completion</p>
+              </div>
+            </div>
 
             <select
               style={styles.select}
@@ -496,62 +586,57 @@ export default function App() {
           </div>
         </section>
 
-        <section style={styles.listCard}>
-          <div style={styles.listHeader}>
-            <h2 style={styles.cardTitle}>Escrow Records</h2>
+        <section style={styles.recordsCard}>
+          <div style={styles.recordsHeader}>
+            <div>
+              <h2 style={styles.sectionTitle}>Escrow Records</h2>
+              <p style={styles.sectionSub}>Live on-chain activity</p>
+            </div>
+
             <button style={styles.refreshButton} onClick={() => fetchEscrows()}>
               Refresh
             </button>
           </div>
 
-          {loadingEscrows && <p style={styles.cardText}>Loading escrows...</p>}
+          {loadingEscrows && (
+            <div style={styles.emptyState}>Loading escrows...</div>
+          )}
 
           {!loadingEscrows && escrows.length === 0 && (
-            <p style={styles.cardText}>No escrows found yet.</p>
+            <div style={styles.emptyState}>No escrow records yet.</div>
           )}
 
           {!loadingEscrows &&
             escrows.map((item) => (
               <div key={item.id} style={styles.escrowItem}>
                 <div style={styles.escrowTop}>
-                  <div style={styles.escrowId}>Escrow #{item.id}</div>
+                  <div>
+                    <div style={styles.escrowId}>Escrow #{item.id}</div>
+                    <div style={styles.escrowMeta}>
+                      {item.client} → {item.freelancer}
+                    </div>
+                  </div>
                   <div style={getStatusStyle(item.status)}>{item.status}</div>
                 </div>
 
                 <div style={styles.escrowGrid}>
-                  <div>
-                    <div style={styles.label}>Client</div>
-                    <div>{item.client}</div>
-                  </div>
-                  <div>
-                    <div style={styles.label}>Freelancer</div>
-                    <div>{item.freelancer}</div>
-                  </div>
-                  <div>
+                  <div style={styles.dataTile}>
                     <div style={styles.label}>Amount</div>
-                    <div>{item.amount}</div>
+                    <div style={styles.value}>{item.amount}</div>
                   </div>
-                  <div>
+
+                  <div style={styles.dataTile}>
                     <div style={styles.label}>Deadline</div>
-                    <div>{item.deadline}</div>
+                    <div style={styles.value}>{item.deadline}</div>
                   </div>
-                  <div>
+
+                  <div style={{ ...styles.dataTile, gridColumn: "span 2" }}>
                     <div style={styles.label}>Work Hash</div>
                     <div style={styles.hashText}>{item.workHash}</div>
                   </div>
                 </div>
               </div>
             ))}
-        </section>
-
-        <section style={styles.helpCard}>
-          <h2 style={styles.cardTitle}>Correct Testing Order</h2>
-          <ol style={styles.list}>
-            <li>Create escrow first. The first ID will usually be 0.</li>
-            <li>Then submit work using that same escrow ID.</li>
-            <li>Then approve work using that same escrow ID.</li>
-            <li>Cancel only works for an escrow that is still in Created state.</li>
-          </ol>
         </section>
       </div>
     </div>
@@ -571,27 +656,57 @@ function getStatusStyle(status) {
 
 function badgeStyle(background, color) {
   return {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
     background,
     color,
-    padding: "6px 12px",
+    padding: "8px 14px",
     borderRadius: "999px",
     fontWeight: 700,
-    fontSize: "13px",
+    fontSize: "12px",
+    letterSpacing: "0.02em",
   };
 }
 
 const styles = {
   page: {
     minHeight: "100vh",
-    background: "#f8fafc",
-    padding: "32px 16px",
-    fontFamily: "Arial, sans-serif",
+    background:
+      "radial-gradient(circle at top left, rgba(99,102,241,0.15), transparent 28%), radial-gradient(circle at bottom right, rgba(168,85,247,0.14), transparent 26%), linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%)",
+    padding: "24px 16px 48px",
+    fontFamily:
+      'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    position: "relative",
+    overflow: "hidden",
+  },
+  glowOne: {
+    position: "absolute",
+    top: "-120px",
+    left: "-120px",
+    width: "280px",
+    height: "280px",
+    borderRadius: "999px",
+    background: "rgba(99,102,241,0.12)",
+    filter: "blur(40px)",
+  },
+  glowTwo: {
+    position: "absolute",
+    right: "-120px",
+    bottom: "-120px",
+    width: "300px",
+    height: "300px",
+    borderRadius: "999px",
+    background: "rgba(168,85,247,0.12)",
+    filter: "blur(40px)",
   },
   container: {
-    maxWidth: "1200px",
+    maxWidth: "1280px",
     margin: "0 auto",
+    position: "relative",
+    zIndex: 1,
   },
-  header: {
+  topbar: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
@@ -599,171 +714,358 @@ const styles = {
     gap: "16px",
     marginBottom: "24px",
   },
-  title: {
-    margin: 0,
-    fontSize: "36px",
+  brandWrap: {
+    display: "flex",
+    alignItems: "center",
+    gap: "14px",
+  },
+  logo: {
+    width: "48px",
+    height: "48px",
+    borderRadius: "16px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "20px",
+    color: "#ffffff",
+    background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
+    boxShadow: "0 12px 30px rgba(79,70,229,0.28)",
+  },
+  brandTitle: {
+    fontSize: "22px",
     fontWeight: 800,
     color: "#0f172a",
+    lineHeight: 1.1,
   },
-  subtitle: {
-    margin: "8px 0 0",
-    fontSize: "18px",
-    color: "#475569",
+  brandSub: {
+    fontSize: "14px",
+    color: "#64748b",
+    marginTop: "4px",
   },
-  badge: {
-    padding: "12px 16px",
+  connectionBadge: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "12px 18px",
     borderRadius: "999px",
+    border: "1px solid",
+    fontSize: "14px",
     fontWeight: 700,
+    backdropFilter: "blur(8px)",
+  },
+  connectionDot: {
+    width: "10px",
+    height: "10px",
+    borderRadius: "999px",
+  },
+  hero: {
+    display: "grid",
+    gridTemplateColumns: "1.3fr 0.9fr",
+    gap: "24px",
+    alignItems: "center",
+    padding: "34px",
+    borderRadius: "30px",
+    background:
+      "linear-gradient(135deg, #0f172a 0%, #1e1b4b 45%, #4c1d95 100%)",
+    color: "#ffffff",
+    boxShadow: "0 30px 70px rgba(15,23,42,0.22)",
+    marginBottom: "24px",
+  },
+  heroContent: {
+    maxWidth: "640px",
+  },
+  heroPill: {
+    display: "inline-block",
+    padding: "8px 12px",
+    borderRadius: "999px",
+    fontSize: "12px",
+    fontWeight: 700,
+    background: "rgba(255,255,255,0.12)",
+    color: "#e9d5ff",
+    marginBottom: "18px",
+    border: "1px solid rgba(255,255,255,0.12)",
+  },
+  heroTitle: {
+    margin: 0,
+    fontSize: "clamp(34px, 5vw, 54px)",
+    lineHeight: 1.02,
+    fontWeight: 900,
+    letterSpacing: "-0.03em",
+  },
+  heroText: {
+    margin: "18px 0 0",
+    fontSize: "18px",
+    lineHeight: 1.65,
+    color: "rgba(255,255,255,0.78)",
+    maxWidth: "560px",
+  },
+  heroVisual: {
+    minHeight: "250px",
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  visualCardMain: {
+    width: "220px",
+    height: "220px",
+    borderRadius: "30px",
+    background:
+      "linear-gradient(135deg, rgba(255,255,255,0.18), rgba(255,255,255,0.06))",
+    backdropFilter: "blur(12px)",
+    border: "1px solid rgba(255,255,255,0.16)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "28px",
+    fontWeight: 800,
+    color: "#ffffff",
+    boxShadow: "0 24px 60px rgba(0,0,0,0.22)",
+  },
+  visualCardSmallTop: {
+    position: "absolute",
+    top: "18px",
+    right: "30px",
+    padding: "12px 16px",
+    borderRadius: "18px",
+    background: "rgba(255,255,255,0.12)",
+    border: "1px solid rgba(255,255,255,0.15)",
+    fontWeight: 700,
+    color: "#ddd6fe",
+  },
+  visualCardSmallBottom: {
+    position: "absolute",
+    bottom: "24px",
+    left: "24px",
+    padding: "12px 16px",
+    borderRadius: "18px",
+    background: "rgba(255,255,255,0.12)",
+    border: "1px solid rgba(255,255,255,0.15)",
+    fontWeight: 700,
+    color: "#c4b5fd",
+  },
+  sectionBlock: {
+    marginBottom: "24px",
+  },
+  sectionHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "16px",
+  },
+  sectionTitle: {
+    margin: 0,
+    fontSize: "26px",
+    fontWeight: 800,
+    color: "#0f172a",
+    letterSpacing: "-0.02em",
+  },
+  sectionSub: {
+    margin: "6px 0 0",
+    color: "#64748b",
     fontSize: "14px",
   },
-  infoCard: {
-    background: "#ffffff",
-    borderRadius: "18px",
-    padding: "24px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.06)",
-    marginBottom: "20px",
-  },
-  helpCard: {
-    background: "#ffffff",
-    borderRadius: "18px",
-    padding: "24px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.06)",
-    marginTop: "20px",
-  },
-  successBox: {
-    background: "#dcfce7",
-    color: "#166534",
-    padding: "12px 16px",
-    borderRadius: "12px",
-    marginBottom: "16px",
-  },
-  errorBox: {
-    background: "#fee2e2",
-    color: "#991b1b",
-    padding: "12px 16px",
-    borderRadius: "12px",
-    marginBottom: "16px",
-  },
-  grid: {
+  accountGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
+    gap: "16px",
+  },
+  accountCard: {
+    background: "rgba(255,255,255,0.78)",
+    backdropFilter: "blur(10px)",
+    border: "1px solid rgba(255,255,255,0.8)",
+    borderRadius: "22px",
+    padding: "18px",
+    display: "flex",
+    alignItems: "center",
+    gap: "14px",
+    boxShadow: "0 14px 38px rgba(15,23,42,0.08)",
+  },
+  accountAvatar: {
+    width: "50px",
+    height: "50px",
+    borderRadius: "18px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontWeight: 800,
+    fontSize: "18px",
+    flexShrink: 0,
+  },
+  accountInfo: {
+    minWidth: 0,
+  },
+  accountName: {
+    fontWeight: 800,
+    fontSize: "17px",
+    color: "#0f172a",
+    marginBottom: "4px",
+  },
+  accountAddress: {
+    color: "#64748b",
+    fontSize: "14px",
+    wordBreak: "break-all",
+  },
+  actionsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
     gap: "20px",
+    marginBottom: "24px",
   },
-  card: {
-    background: "#ffffff",
-    borderRadius: "18px",
+  actionCard: {
+    background: "rgba(255,255,255,0.86)",
+    backdropFilter: "blur(12px)",
+    border: "1px solid rgba(255,255,255,0.82)",
+    borderRadius: "26px",
     padding: "24px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.06)",
+    boxShadow: "0 18px 45px rgba(15,23,42,0.08)",
   },
-  listCard: {
-    background: "#ffffff",
+  actionHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: "14px",
+    marginBottom: "18px",
+  },
+  actionIcon: {
+    width: "50px",
+    height: "50px",
     borderRadius: "18px",
-    padding: "24px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.06)",
-    marginTop: "20px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: "24px",
+    fontWeight: 800,
+    flexShrink: 0,
   },
-  cardTitle: {
-    margin: "0 0 10px",
+  actionTitle: {
+    margin: 0,
     fontSize: "24px",
     color: "#0f172a",
+    fontWeight: 800,
+    letterSpacing: "-0.02em",
   },
-  cardText: {
-    margin: "0 0 16px",
-    color: "#475569",
-    lineHeight: 1.5,
-  },
-  smallText: {
-    margin: "6px 0",
-    color: "#334155",
+  actionText: {
+    margin: "4px 0 0",
+    color: "#64748b",
     fontSize: "14px",
-    wordBreak: "break-word",
   },
   input: {
     width: "100%",
-    padding: "12px 14px",
+    padding: "14px 16px",
     marginBottom: "12px",
-    borderRadius: "10px",
-    border: "1px solid #cbd5e1",
+    borderRadius: "14px",
+    border: "1px solid #dbe3f0",
+    background: "#ffffff",
+    color: "#0f172a",
     fontSize: "15px",
+    outline: "none",
     boxSizing: "border-box",
   },
   select: {
     width: "100%",
-    padding: "12px 14px",
+    padding: "14px 16px",
     marginBottom: "12px",
-    borderRadius: "10px",
-    border: "1px solid #cbd5e1",
+    borderRadius: "14px",
+    border: "1px solid #dbe3f0",
+    background: "#ffffff",
+    color: "#0f172a",
     fontSize: "15px",
+    outline: "none",
     boxSizing: "border-box",
-    background: "#fff",
   },
   primaryButton: {
     width: "100%",
-    padding: "12px 16px",
-    borderRadius: "10px",
+    padding: "14px 18px",
+    borderRadius: "14px",
     border: "none",
-    background: "#2563eb",
-    color: "white",
-    fontWeight: 700,
-    cursor: "pointer",
+    background: "linear-gradient(135deg, #4f46e5, #7c3aed)",
+    color: "#ffffff",
+    fontWeight: 800,
     fontSize: "15px",
+    cursor: "pointer",
+    boxShadow: "0 14px 28px rgba(79,70,229,0.22)",
+    marginTop: "4px",
   },
   warningButton: {
     width: "100%",
-    padding: "12px 16px",
-    borderRadius: "10px",
+    padding: "14px 18px",
+    borderRadius: "14px",
     border: "none",
-    background: "#f59e0b",
-    color: "white",
-    fontWeight: 700,
-    cursor: "pointer",
+    background: "linear-gradient(135deg, #f59e0b, #f97316)",
+    color: "#ffffff",
+    fontWeight: 800,
     fontSize: "15px",
+    cursor: "pointer",
+    boxShadow: "0 14px 28px rgba(245,158,11,0.22)",
+    marginTop: "4px",
   },
   successButton: {
     width: "100%",
-    padding: "12px 16px",
-    borderRadius: "10px",
+    padding: "14px 18px",
+    borderRadius: "14px",
     border: "none",
-    background: "#16a34a",
-    color: "white",
-    fontWeight: 700,
-    cursor: "pointer",
+    background: "linear-gradient(135deg, #16a34a, #22c55e)",
+    color: "#ffffff",
+    fontWeight: 800,
     fontSize: "15px",
+    cursor: "pointer",
+    boxShadow: "0 14px 28px rgba(34,197,94,0.2)",
+    marginTop: "4px",
   },
   dangerButton: {
     width: "100%",
-    padding: "12px 16px",
-    borderRadius: "10px",
+    padding: "14px 18px",
+    borderRadius: "14px",
     border: "none",
-    background: "#dc2626",
-    color: "white",
-    fontWeight: 700,
-    cursor: "pointer",
+    background: "linear-gradient(135deg, #dc2626, #ef4444)",
+    color: "#ffffff",
+    fontWeight: 800,
     fontSize: "15px",
-  },
-  refreshButton: {
-    padding: "10px 14px",
-    borderRadius: "10px",
-    border: "none",
-    background: "#0f172a",
-    color: "white",
-    fontWeight: 700,
     cursor: "pointer",
+    boxShadow: "0 14px 28px rgba(239,68,68,0.2)",
+    marginTop: "4px",
   },
-  listHeader: {
+  recordsCard: {
+    background: "rgba(255,255,255,0.86)",
+    backdropFilter: "blur(12px)",
+    border: "1px solid rgba(255,255,255,0.82)",
+    borderRadius: "28px",
+    padding: "24px",
+    boxShadow: "0 18px 45px rgba(15,23,42,0.08)",
+  },
+  recordsHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     flexWrap: "wrap",
     gap: "16px",
-    marginBottom: "12px",
+    marginBottom: "18px",
+  },
+  refreshButton: {
+    padding: "12px 16px",
+    borderRadius: "14px",
+    border: "none",
+    background: "#0f172a",
+    color: "#ffffff",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+  emptyState: {
+    padding: "28px 18px",
+    borderRadius: "18px",
+    background: "#f8fafc",
+    border: "1px dashed #cbd5e1",
+    color: "#64748b",
+    textAlign: "center",
   },
   escrowItem: {
-    background: "#f8fafc",
+    background:
+      "linear-gradient(180deg, rgba(248,250,252,0.92), rgba(255,255,255,0.95))",
     border: "1px solid #e2e8f0",
-    borderRadius: "14px",
-    padding: "16px",
-    marginBottom: "14px",
+    borderRadius: "22px",
+    padding: "18px",
+    marginBottom: "16px",
+    boxShadow: "0 10px 24px rgba(15,23,42,0.04)",
   },
   escrowTop: {
     display: "flex",
@@ -771,31 +1073,66 @@ const styles = {
     alignItems: "center",
     flexWrap: "wrap",
     gap: "12px",
-    marginBottom: "12px",
+    marginBottom: "16px",
   },
   escrowId: {
-    fontWeight: 800,
-    fontSize: "18px",
+    fontWeight: 900,
+    fontSize: "20px",
     color: "#0f172a",
+    letterSpacing: "-0.02em",
+  },
+  escrowMeta: {
+    color: "#64748b",
+    marginTop: "6px",
+    fontSize: "14px",
   },
   escrowGrid: {
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
     gap: "14px",
   },
+  dataTile: {
+    background: "#ffffff",
+    border: "1px solid #e2e8f0",
+    borderRadius: "16px",
+    padding: "14px",
+    minWidth: 0,
+  },
   label: {
-    fontSize: "13px",
+    fontSize: "12px",
     color: "#64748b",
+    fontWeight: 800,
+    marginBottom: "6px",
+    textTransform: "uppercase",
+    letterSpacing: "0.05em",
+  },
+  value: {
+    color: "#0f172a",
     fontWeight: 700,
-    marginBottom: "4px",
+    fontSize: "15px",
   },
   hashText: {
+    color: "#0f172a",
     wordBreak: "break-word",
+    lineHeight: 1.5,
+    fontSize: "14px",
   },
-  list: {
-    margin: 0,
-    paddingLeft: "20px",
-    color: "#334155",
-    lineHeight: 1.8,
+  successBox: {
+    background: "rgba(34,197,94,0.12)",
+    color: "#166534",
+    padding: "14px 16px",
+    borderRadius: "16px",
+    marginBottom: "18px",
+    border: "1px solid rgba(34,197,94,0.18)",
+    fontWeight: 600,
+  },
+  errorBox: {
+    background: "rgba(239,68,68,0.12)",
+    color: "#991b1b",
+    padding: "14px 16px",
+    borderRadius: "16px",
+    marginBottom: "18px",
+    border: "1px solid rgba(239,68,68,0.18)",
+    fontWeight: 600,
   },
 };
